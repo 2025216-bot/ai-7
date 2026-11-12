@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>스마트 농업도우미 Pro - 종합 농업 정보 플랫폼</title>
+
+  <!-- PWA 메타데이터 연동 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1b4332">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    /* ==========================================
+       1. 라이트 / 다크 고대비 CSS 테마 변수
+       ========================================== */
+    :root {
+      --bg-color: #f2f6f3;
+      --card-bg: #ffffff;
+      --card-sub-bg: #f7faf8;
+      --text-main: #111827;
+      --text-sub: #4b5563;
+      --border-color: #cbd5e1;
+      --primary-color: #1b4332;
+      --primary-light: #2d6a4f;
+      --accent-color: #40916c;
+      --danger-color: #dc2626;
+      --warning-color: #d97706;
+      --safe-color: #15803d;
+      --shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0d1510;
+      --card-bg: #16221b;
+      --card-sub-bg: #1f2f26;
+      --text-main: #f8fafc;
+      --text-sub: #cbd5e1;
+      --border-color: #33473b;
+      --primary-color: #52b788;
+      --primary-light: #74c69d;
+      --accent-color: #95d5b2;
+      --shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+      padding-bottom: 60px;
+      transition: background-color 0.25s, color 0.25s;
+    }
+
+    /* 상단 헤더 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0 16px 0;
+      border-bottom: 3px solid var(--primary-color);
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title {
+      font-size: 21px;
+      font-weight: 900;
+      color: var(--primary-color);
+      letter-spacing: -0.5px;
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background-color: var(--card-bg);
+      border: 2px solid var(--primary-color);
+      color: var(--primary-color);
+      padding: 8px 14px;
+      min-height: 46px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 상단 3단 네비게이션 탭 (버튼 크기 확대) */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 6px;
+      margin-bottom: 20px;
+      border: 2px solid var(--border-color);
+      box-shadow: var(--shadow);
+      gap: 6px;
+    }
+
+    .tab-btn {
+      min-height: 56px;
+      padding: 10px 4px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      font-size: 16px;
+      font-weight: 800;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:active {
+      transform: scale(0.95);
+    }
+
+    .tab-btn.active {
+      background-color: var(--primary-color);
+      color: #ffffff;
+    }
+
+    /* 탭 패널 */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 카드 스타일 */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 14px;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    select, input[type="text"], textarea {
+      width: 100%;
+      height: 56px;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 0 14px;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      background-color: var(--card-sub-bg);
+      color: var(--text-main);
+      outline: none;
+      font-family: inherit;
+    }
+
+    textarea {
+      height: 96px;
+      padding: 12px 14px;
+      resize: vertical;
+    }
+
+    select:focus, input[type="text"]:focus, textarea:focus {
+      border-color: var(--primary-color);
+    }
+
+    /* 초대형 메인 실행 버튼 */
+    .btn-action {
+      width: 100%;
+      height: 62px;
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+      transition: transform 0.1s, opacity 0.15s;
+    }
+
+    .btn-action:active {
+      transform: scale(0.97);
+    }
+
+    /* AI 분석 결과 영역 */
+    .result-section {
+      display: none;
+      border-left: 8px solid var(--primary-color);
+    }
+
+    .dday-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .dday-badge {
+      font-size: 26px;
+      font-weight: 900;
+      padding: 6px 16px;
+      border-radius: 30px;
+      background-color: rgba(27, 67, 50, 0.15);
+      color: var(--primary-color);
+    }
+
+    /* GDD 달성률 진행바 */
+    .progress-wrap {
+      background-color: var(--border-color);
+      border-radius: 10px;
+      height: 16px;
+      width: 100%;
+      overflow: hidden;
+      margin: 8px 0 14px 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--primary-color);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    /* 4대 전문 농업 지표 그리드 */
+    .agri-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .grid-box {
+      background-color: var(--card-sub-bg);
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .grid-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-sub);
+    }
+
+    .grid-value {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--primary-color);
+      margin-top: 4px;
+    }
+
+    /* 냉해 위험 배너 */
+    .risk-banner {
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 800;
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .risk-danger { background-color: rgba(220, 38, 38, 0.15); color: var(--danger-color); }
+    .risk-warning { background-color: rgba(217, 119, 6, 0.15); color: var(--warning-color); }
+    .risk-safe { background-color: rgba(21, 128, 61, 0.15); color: var(--safe-color); }
+
+    .guide-box {
+      background-color: var(--card-sub-bg);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 17px;
+      line-height: 1.7;
+      border: 1px solid var(--border-color);
+    }
+
+    /* 클릭 가능한 농업 이슈 뉴스 카드 */
+    .news-item {
+      padding: 16px;
+      margin-bottom: 12px;
+      border-radius: 14px;
+      background-color: var(--card-sub-bg);
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .news-item:hover {
+      border-color: var(--primary-color);
+    }
+
+    .news-tag {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background-color: var(--primary-color);
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .news-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .news-detail {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border-color);
+      font-size: 16px;
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    .news-item.open .news-detail {
+      display: block;
+    }
+
+    /* 커뮤니티 게시글 */
+    .post-card {
+      background-color: var(--card-sub-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-sub);
+    }
+
+    .post-author {
+      font-weight: 900;
+      color: var(--primary-color);
+    }
+
+    .post-content {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* 사용법 안내 팝업 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.65);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border: 2px solid var(--primary-color);
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--primary-color);
+      margin-bottom: 16px;
+    }
+
+    .modal-step {
+      background-color: var(--card-sub-bg);
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border-left: 5px solid var(--primary-color);
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 헤더 (사용법 버튼 & 테마 전환 버튼) -->
+  <div class="header">
+    <div class="brand">
+      <span style="font-size: 26px;">🌾</span>
+      <h1 class="brand-title">스마트 농업도우미 Pro</h1>
+    </div>
+    <div class="header-btns">
+      <button type="button" class="icon-btn" id="openManualBtn">❓ 사용법</button>
+      <button type="button" class="icon-btn" id="themeToggleBtn">🌙 어둡게</button>
+    </div>
+  </div>
+
+  <!-- 메인 3단 네비게이션 탭 -->
+  <div class="nav-tabs">
+    <button type="button" class="tab-btn active" data-tab="predict">🌸 개화·생육</button>
+    <button type="button" class="tab-btn" data-tab="news">📰 농업 이슈</button>
+    <button type="button" class="tab-btn" data-tab="community">💬 소통방</button>
+  </div>
+
+  <!-- ==========================================
+       TAB 1: AI 개화 시기 및 전문 생육 정보
+       ========================================== -->
+  <div id="tab-predict" class="tab-content active">
+    <div class="card">
+      <div class="card-title">🌱 1단계: 농가 지역과 작물을 선택하세요</div>
+      
+      <div class="form-group">
+        <label for="regionSelect">📍 농가 지역</label>
+        <select id="regionSelect">
+          <option value="서울/경기">서울 / 경기도</option>
+          <option value="강원">강원도</option>
+          <option value="충청">충청도</option>
+          <option value="전라">전라도</option>
+          <option value="경상">경상도</option>
+          <option value="제주">제주도</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="cropSelect">🍎 재배 작물 (12종 지원)</label>
+        <select id="cropSelect">
+          <optgroup label="과수류">
+            <option value="배">배나무 (발육기준 5.0℃ / 목표 250 GDD)</option>
+            <option value="사과">사과나무 (발육기준 5.0℃ / 목표 280 GDD)</option>
+            <option value="복숭아">복숭아나무 (발육기준 4.5℃ / 목표 220 GDD)</option>
+            <option value="포도">포도나무 (발육기준 10.0℃ / 목표 320 GDD)</option>
+            <option value="감귤">감귤 (발육기준 13.0℃ / 목표 400 GDD)</option>
+            <option value="단감">단감나무 (발육기준 10.0℃ / 목표 350 GDD)</option>
+            <option value="자두">자두나무 (발육기준 5.0℃ / 목표 210 GDD)</option>
+          </optgroup>
+          <optgroup label="과채 및 채소류">
+            <option value="딸기">딸기 (발육기준 5.0℃ / 목표 180 GDD)</option>
+            <option value="토마토">토마토 (발육기준 10.0℃ / 목표 300 GDD)</option>
+            <option value="고추">고추 (발육기준 10.0℃ / 목표 330 GDD)</option>
+            <option value="수박">수박 (발육기준 15.0℃ / 목표 420 GDD)</option>
+          </optgroup>
+          <optgroup label="식량작물">
+            <option value="벼">벼 (발육기준 10.0℃ / 목표 450 GDD)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <button type="button" class="btn-action" id="predictBtn">🌸 AI 개화 시기 및 상세 정보 보기</button>
+    </div>
+
+    <!-- AI 예측 결과 카드 -->
+    <div class="card result-section" id="resultCard">
+      <div class="dday-header">
+        <span class="dday-badge" id="ddayBadge">개화 D-Day</span>
+        <span style="font-size: 16px; font-weight: 800; color: var(--text-sub);" id="gddProgressText">누적생육온도: 0%</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="gddProgressBar"></div>
+      </div>
+      
+      <div style="font-size: 21px; font-weight: 900; margin-bottom: 10px;">
+        예상 개화·생육 적기: <span id="predictedDateText" style="color: var(--primary-color);">-월 -일</span>
+      </div>
+
+      <!-- 냉해 위험 배너 -->
+      <div id="riskBanner" class="risk-banner risk-safe">
+        <span id="riskIcon">✅</span>
+        <span id="riskText">기상 위험도 분석 완료</span>
+      </div>
+
+      <!-- 4대 전문 농업 관리 지표 -->
+      <div class="agri-grid">
+        <div class="grid-box">
+          <div class="grid-label">💧 권장 토양 수분</div>
+          <div class="grid-value" id="moistureValue">-</div>
+        </div>
+        <div class="grid-box">
+          <div class="grid-label">🐛 주요 주의 병해충</div>
+          <div class="grid-value" id="pestValue">-</div>
+        </div>
+        <div class="grid-box">
+          <div class="grid-label">🧪 방제·영양제 적기</div>
+          <div class="grid-value" id="sprayValue">-</div>
+        </div>
+        <div class="grid-box">
+          <div class="grid-label">🐝 수분·생육 핵심</div>
+          <div class="grid-value" id="pollinationValue">-</div>
+        </div>
+      </div>
+
+      <div style="font-weight: 900; font-size: 18px; margin-top: 16px; margin-bottom: 8px;">💡 어르신 맞춤 농작업 행동 지침</div>
+      <div id="guideText" class="guide-box"></div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       TAB 2: 클릭하면 상세 정보가 열리는 농업 이슈
+       ========================================== -->
+  <div id="tab-news" class="tab-content">
+    <div class="card">
+      <div class="card-title">📢 농업 브리핑 (항목을 누르면 상세 설명이 열립니다)</div>
+
+      <div class="news-item">
+        <span class="news-tag">기후변화 대응</span>
+        <div class="news-title">
+          <span>봄철 이상저온 및 서리 대비 과수원 관리법</span>
+          <span>▼</span>
+        </div>
+        <div class="news-detail">
+          <b>[상세 대응 요령]</b><br>
+          • 야간 기온이 0℃ 이하로 예보되면 개화기 꽃눈이 얼어 죽는 냉해가 발생합니다.<br>
+          • 해 질 녘부터 방상팬을 가동하고, 미세살수 장치는 기온이 1~2℃일 때 미리 틀어 얼음 막으로 꽃눈을 보호하세요.<br>
+          • 과수원 바닥의 잡초를 짧게 깎아 낮 동안 땅이 태양열을 많이 흡수하도록 관리하세요.
+        </div>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">정부 지원사업</span>
+        <div class="news-title">
+          <span>2026년 스마트 농업 자재 및 재해예방 시설 보조금</span>
+          <span>▼</span>
+        </div>
+        <div class="news-detail">
+          <b>[지원 내용 및 신청 방법]</b><br>
+          • 지원 대상: 과수 및 시설원예 재배 농업경영체 등록 농가<br>
+          • 지원 품목: 자동 방상팬, 미세살수 장치, 과수원 무인 기상 관측기 설치비 최대 50% 보조<br>
+          • 신청 장소: 거주지 읍·면·동 행정복지센터 산업팀 또는 지역 농협 방문 신청
+        </div>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">병해충 예보</span>
+        <div class="news-title">
+          <span>개화기 전후 진딧물·응애·화상병 초기 방제 지침</span>
+          <span>▼</span>
+        </div>
+        <div class="news-detail">
+          <b>[방제 핵심 포인트]</b><br>
+          • 평년보다 기온이 높으면 월동 해충의 부화 시기가 3~5일 앞당겨집니다.<br>
+          • 꽃이 완전히 핀 만개기에는 수정벌 피해를 막기 위해 살충제 살포를 피하고, 개화 직전(꽃봉오리 시기)에 1차 방제를 완료하세요.
+        </div>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">인공수분 노하우</span>
+        <div class="news-title">
+          <span>착과율을 높이는 인공수분 및 수정벌 방사 요령</span>
+          <span>▼</span>
+        </div>
+        <div class="news-detail">
+          <b>[수분 작업 적기]</b><br>
+          • 인공수분은 중심화가 40~60% 피었을 때 오전 10시~오후 3시 사이에 실시하는 것이 가장 효과적입니다.<br>
+          • 수정벌 통은 개화 2~3일 전에 과수원 남향에 배치하고, 농약 살포 후 최소 3일이 지난 뒤 방사하세요.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       TAB 3: 전국 농가 정보 공유 소통방
+       ========================================== -->
+  <div id="tab-community" class="tab-content">
+    <div class="card">
+      <div class="card-title">💬 농가 정보 공유 소통방</div>
+      
+      <div class="form-group">
+        <label for="commAuthor">👨‍🌾 작성자 (지역 / 이름)</label>
+        <input type="text" id="commAuthor" placeholder="예: 나주 배 농부">
+      </div>
+
+      <div class="form-group">
+        <label for="commCategory">🏷️ 글 분류</label>
+        <select id="commCategory">
+          <option value="농사 노하우">💡 나만의 농사 노하우</option>
+          <option value="동네 날씨 제보">🌤️ 우리 동네 날씨·개화 현황</option>
+          <option value="병해충 질문">🐛 병해충·영양제 질문</option>
+          <option value="자재·지원 정보">🚜 농기계·지원금 정보 공유</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="commText">✏️ 공유할 내용</label>
+        <textarea id="commText" placeholder="다른 농업인들과 나누고 싶은 현장 소식이나 질문을 적어주세요."></textarea>
+      </div>
+
+      <button type="button" class="btn-action" id="postCommBtn">💬 소통방에 글 올리기</button>
+    </div>
+
+    <!-- 실시간 게시글 목록 -->
+    <div id="communityFeed"></div>
+  </div>
+
+  <!-- ==========================================
+       사용법 안내 팝업 모달 (3단 메뉴 기준)
+       ========================================== -->
+  <div class="modal-overlay" id="manualModal">
+    <div class="modal-card">
+      <div class="modal-title">📖 스마트 농업도우미 Pro 사용법</div>
+      <div class="modal-step">
+        <b>1단계 [🌸 개화·생육 탭]</b><br>
+        우리 농장의 <b>지역</b>과 <b>재배 작물</b>을 고른 뒤 초록색 버튼을 누르면 AI가 누적생육온도(GDD)를 계산해 <b>개화 날짜, 냉해 위험도, 토양 수분, 방제 적기</b>를 알려줍니다.
+      </div>
+      <div class="modal-step">
+        <b>2단계 [📰 농업 이슈 탭]</b><br>
+        이상저온 대책, 정부 보조금, 병해충 방제 요령 등 궁금한 제목을 터치하면 자세한 설명이 펼쳐집니다.
+      </div>
+      <div class="modal-step">
+        <b>3단계 [💬 소통방 탭]</b><br>
+        전국 농부들과 우리 동네 개화 소식이나 농사 비법을 글로 올리고 서로 정보를 나눌 수 있습니다.
+      </div>
+      <button type="button" class="btn-action" id="closeManualBtn" style="margin-top: 10px;">✅ 확인했어요 (닫기)</button>
+    </div>
+  </div>
+
+  <script>
+    // ====================================================
+    // 1. Google Apps Script 백엔드 배포 URL (소통방 백업 연동)
+    // ====================================================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx3MQ6HmdnA7e6SmbnBlCk3fzYObltdu3qFGi55O1EsWPb5crsMvekZgPNAoTKgblu5/exec";
+
+    // ====================================================
+    // 2. 작물별 GDD 및 전문 농업 관리 데이터베이스 (12종)
+    // ====================================================
+    const CROP_DATABASE = {
+      "배": { baseTemp: 5.0, targetGDD: 250, moisture: "60~65%", pest: "진딧물·꼬마배나무이", spray: "개화 5일 전 1차 방제", pollination: "인공수분 꽃가루 준비" },
+      "사과": { baseTemp: 5.0, targetGDD: 280, moisture: "60~65%", pest: "응애·화상병 주의", spray: "발아 직후 석회유황합제", pollination: "중심화 50% 개화 시 수분" },
+      "복숭아": { baseTemp: 4.5, targetGDD: 220, moisture: "55~60%", pest: "잎오갈병·진딧물", spray: "개화 직전 붕소 엽면시비", pollination: "자가수분 가능·적화 준비" },
+      "포도": { baseTemp: 10.0, targetGDD: 320, moisture: "65~70%", pest: "새눈무늬병·응애", spray: "눈 트기 전 석회보르도액", pollination: "지베렐린 처리 시기 확인" },
+      "감귤": { baseTemp: 13.0, targetGDD: 400, moisture: "70~75%", pest: "궤양병·귤응애", spray: "봄순 발아기 구리제 살포", pollination: "하우스 환기 및 온도 유지" },
+      "단감": { baseTemp: 10.0, targetGDD: 350, moisture: "60~65%", pest: "감나무노린재·탄저병", spray: "신초 생장기 예방 약제", pollination: "수분수 혼식 비율 점검" },
+      "자두": { baseTemp: 5.0, targetGDD: 210, moisture: "55~60%", pest: "검은점무늬병·진딧물", spray: "개화 전 살균제 1회 살포", pollination: "수정벌 벌통 조기 배치" },
+      "딸기": { baseTemp: 5.0, targetGDD: 180, moisture: "70~80%", pest: "흰가루병·점박이응애", spray: "천적(칠레이리응애) 방사", pollination: "벌 활동 온도 18~22℃ 유지" },
+      "토마토": { baseTemp: 10.0, targetGDD: 300, moisture: "65~75%", pest: "잎곰팡이병·담배가루이", spray: "칼슘제 주기적 엽면시비", pollination: "수정벌 방사 또는 진동 수분" },
+      "고추": { baseTemp: 10.0, targetGDD: 330, moisture: "60~70%", pest: "총채벌레·탄저병", spray: "정식 직후 진딧물 입제 처리", pollination: "야간 보온 및 지주대 설치" },
+      "수박": { baseTemp: 15.0, targetGDD: 420, moisture: "65~70%", pest: "덩굴쪼김병·진딧물", spray: "착과 전 엽면 영양제 공급", pollination: "오전 9시 이전 인공수분" },
+      "벼": { baseTemp: 10.0, targetGDD: 450, moisture: "80~90%", pest: "도열병·물바구미", spray: "못자리 볍씨 소독 및 상자처리", pollination: "적정 물대기 및 이앙 준비" }
+    };
+
+    // 지역별 기상 실황 모의 데이터
+    const REGION_WEATHER = {
+      "서울/경기": { avgTemp: 13.5, minTemp: 1.5 },
+      "강원": { avgTemp: 10.2, minTemp: -2.1 },
+      "충청": { avgTemp: 12.8, minTemp: 0.5 },
+      "전라": { avgTemp: 14.2, minTemp: 3.0 },
+      "경상": { avgTemp: 14.8, minTemp: 3.5 },
+      "제주": { avgTemp: 16.5, minTemp: 6.0 }
+    };
+
+    // 기본 커뮤니티 샘플 게시글
+    const DEFAULT_POSTS = [
+      { author: "상주 곶감 농부", category: "농사 노하우", time: "10분 전", text: "오늘 야간 기온이 1도까지 떨어진다고 합니다. 다들 방상팬 미리 점검하시고 왕겨 준비하세요!" },
+      { author: "제주 서귀포 농원", category: "동네 날씨 제보", time: "1시간 전", text: "제주는 올해 봄 기온이 높아서 감귤과 배 개화가 평년보다 3일 정도 빠릅니다. 약제 방제 일정을 앞당기세요." },
+      { author: "나주 배 작목반", category: "자재·지원 정보", time: "3시간 전", text: "면사무소에서 미세살수 장치 노즐 교체 보조금 신청받고 있습니다. 이번 주 금요일까지라고 하니 서두르세요." }
+    ];
+
+    // ====================================================
+    // 3. DOM 로드 완료 후 이벤트 리스너 안전 연결
+    // ====================================================
+    document.addEventListener("DOMContentLoaded", function () {
+      // PWA 서비스 워커 등록
+      if ("serviceWorker" in navigator && (window.location.protocol === "http:" || window.location.protocol === "https:")) {
+        navigator.serviceWorker.register("sw.js").catch(function (err) {
+          console.log("SW 등록 안내:", err);
+        });
+      }
+
+      // 다크/라이트 테마 초기화 및 전환 버튼 연결
+      const themeToggleBtn = document.getElementById("themeToggleBtn");
+      const savedTheme = localStorage.getItem("agri_pro_v6_theme") || "light";
+      if (savedTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        themeToggleBtn.textContent = "☀️ 밝게";
+      }
+
+      themeToggleBtn.addEventListener("click", function () {
+        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        if (isDark) {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.setItem("agri_pro_v6_theme", "light");
+          themeToggleBtn.textContent = "🌙 어둡게";
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("agri_pro_v6_theme", "dark");
+          themeToggleBtn.textContent = "☀️ 밝게";
+        }
+      });
+
+      // 사용법 모달 열기/닫기 버튼 연결
+      const manualModal = document.getElementById("manualModal");
+      const openManualBtn = document.getElementById("openManualBtn");
+      const closeManualBtn = document.getElementById("closeManualBtn");
+
+      openManualBtn.addEventListener("click", function () {
+        manualModal.style.display = "flex";
+      });
+
+      closeManualBtn.addEventListener("click", function () {
+        manualModal.style.display = "none";
+      });
+
+      manualModal.addEventListener("click", function (e) {
+        if (e.target === manualModal) {
+          manualModal.style.display = "none";
+        }
+      });
+
+      // 상단 3단 네비게이션 탭 전환 연결
+      const tabButtons = document.querySelectorAll(".tab-btn");
+      const tabContents = document.querySelectorAll(".tab-content");
+
+      tabButtons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const targetTab = btn.getAttribute("data-tab");
+
+          tabButtons.forEach(function (b) { b.classList.remove("active"); });
+          tabContents.forEach(function (c) { c.classList.remove("active"); });
+
+          btn.classList.add("active");
+          const targetPanel = document.getElementById("tab-" + targetTab);
+          if (targetPanel) {
+            targetPanel.classList.add("active");
+          }
+        });
+      });
+
+      // AI 개화 시기 및 상세 정보 예측 버튼 연결
+      const predictBtn = document.getElementById("predictBtn");
+      predictBtn.addEventListener("click", runAIPrediction);
+
+      // 첫 화면 진입 시 기본 예측 결과 즉시 표시
+      runAIPrediction();
+
+      // 농업 이슈 카드 클릭 시 상세 내용 펼치기/접기 연결
+      const newsItems = document.querySelectorAll(".news-item");
+      newsItems.forEach(function (item) {
+        item.addEventListener("click", function () {
+          item.classList.toggle("open");
+          const arrow = item.querySelector(".news-title span:last-child");
+          if (arrow) {
+            arrow.textContent = item.classList.contains("open") ? "▲" : "▼";
+          }
+        });
+      });
+
+      // 커뮤니티 피드 렌더링 및 글쓰기 버튼 연결
+      renderCommunityPosts();
+      const postCommBtn = document.getElementById("postCommBtn");
+      postCommBtn.addEventListener("click", handlePostCommunity);
+    });
+
+    // ====================================================
+    // 4. AI 개화 시기 및 상세 농업 지표 계산 함수
+    // ====================================================
+    function runAIPrediction() {
+      const region = document.getElementById("regionSelect").value;
+      const crop = document.getElementById("cropSelect").value;
+
+      const cropInfo = CROP_DATABASE[crop];
+      const weather = REGION_WEATHER[region];
+
+      // GDD 계산: max(0.5, 평균기온 - 발육기준온도)
+      const dailyGDD = Math.max(0.5, weather.avgTemp - cropInfo.baseTemp);
+      const accumulatedGDD = Math.round(dailyGDD * 14);
+      const progressPercent = Math.min(95, Math.round((accumulatedGDD / cropInfo.targetGDD) * 100));
+
+      const remainingGDD = Math.max(10, cropInfo.targetGDD - accumulatedGDD);
+      const estimatedDays = Math.max(2, Math.round(remainingGDD / dailyGDD));
+
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + estimatedDays);
+      const month = targetDate.getMonth() + 1;
+      const date = targetDate.getDate();
+
+      document.getElementById("resultCard").style.display = "block";
+      document.getElementById("ddayBadge").textContent = "개화 D-" + estimatedDays + "일";
+      document.getElementById("gddProgressText").textContent = "생육온도 달성률: " + progressPercent + "%";
+      document.getElementById("gddProgressBar").style.width = progressPercent + "%";
+      document.getElementById("predictedDateText").textContent = month + "월 " + date + "일 경";
+
+      document.getElementById("moistureValue").textContent = cropInfo.moisture;
+      document.getElementById("pestValue").textContent = cropInfo.pest;
+      document.getElementById("sprayValue").textContent = cropInfo.spray;
+      document.getElementById("pollinationValue").textContent = cropInfo.pollination;
+
+      const riskBanner = document.getElementById("riskBanner");
+      const riskIcon = document.getElementById("riskIcon");
+      const riskText = document.getElementById("riskText");
+      const guideText = document.getElementById("guideText");
+
+      if (weather.minTemp <= 0) {
+        riskBanner.className = "risk-banner risk-danger";
+        riskIcon.textContent = "🚨";
+        riskText.textContent = "냉해 위험 [경고] - 야간 영하(" + weather.minTemp + "℃) 예보";
+        guideText.innerHTML =
+          "• <b>방상팬 및 미세살수 장치</b>를 오늘 밤 즉시 가동 준비하세요.<br>" +
+          "• 인공 수분용 <b>꽃가루 발아율</b>을 사전에 테스트해 두세요.<br>" +
+          "• 과수원 주변 <b>왕겨 태우기 및 열풍기</b>로 온도를 보호하세요.";
+      } else if (weather.minTemp <= 3) {
+        riskBanner.className = "risk-banner risk-warning";
+        riskIcon.textContent = "⚠️";
+        riskText.textContent = "냉해 위험 [주의] - 야간 저온(" + weather.minTemp + "℃) 주의보";
+        guideText.innerHTML =
+          "• 개화기 병해충 약제 살포 시기를 <b>2~3일 연기</b>하세요.<br>" +
+          "• 과수원 과습을 막기 위해 <b>배수로를 미리 정비</b>하세요.<br>" +
+          "• 인공 수분 작업 인력을 사전에 확보해 두세요.";
+      } else {
+        riskBanner.className = "risk-banner risk-safe";
+        riskIcon.textContent = "✅";
+        riskText.textContent = "생육 상태 [정상] - 최저기온 " + weather.minTemp + "℃ 양호";
+        guideText.innerHTML =
+          "• 개화 적기에 맞춰 <b>" + cropInfo.pollination + "</b> 작업을 진행하세요.<br>" +
+          "• 토양 수분을 적정 수준(<b>" + cropInfo.moisture + "</b>)으로 유지해 주세요.";
+      }
+    }
+
+    // ====================================================
+    // 5. 커뮤니티 게시글 렌더링 및 새 글 등록
+    // ====================================================
+    function renderCommunityPosts() {
+      const feed = document.getElementById("communityFeed");
+      const savedPosts = JSON.parse(localStorage.getItem("agri_comm_posts") || "[]");
+      const allPosts = savedPosts.concat(DEFAULT_POSTS);
+
+      feed.innerHTML = "";
+      allPosts.forEach(function (post) {
+        const card = document.createElement("div");
+        card.className = "post-card";
+        card.innerHTML =
+          '<div class="post-header">' +
+            '<span class="post-author">👨‍🌾 ' + escapeHTML(post.author) + '</span>' +
+            '<span>' + escapeHTML(post.time) + ' • [' + escapeHTML(post.category) + ']</span>' +
+          '</div>' +
+          '<div class="post-content">' + escapeHTML(post.text) + '</div>';
+        feed.appendChild(card);
+      });
+    }
+
+    function handlePostCommunity() {
+      const authorInput = document.getElementById("commAuthor");
+      const categorySelect = document.getElementById("commCategory");
+      const textInput = document.getElementById("commText");
+
+      const author = authorInput.value.trim() || "익명 농업인";
+      const category = categorySelect.value;
+      const text = textInput.value.trim();
+
+      if (!text) {
+        alert("공유할 내용을 입력해 주세요.");
+        textInput.focus();
+        return;
+      }
+
+      const savedPosts = JSON.parse(localStorage.getItem("agri_comm_posts") || "[]");
+      savedPosts.unshift({
+        author: author,
+        category: category,
+        time: "방금 전",
+        text: text
+      });
+      localStorage.setItem("agri_comm_posts", JSON.stringify(savedPosts));
+
+      renderCommunityPosts();
+      textInput.value = "";
+      alert("소통방에 글이 성공적으로 등록되었습니다!");
+
+      // 구글 시트에도 자동 백업 기록
+      fetch(GAS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ memo: "[소통방 / " + author + " / " + category + "] " + text })
+      }).catch(function () {});
+    }
+
+    // 보안용 HTML 문자 변환 함수
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
